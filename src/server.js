@@ -1,3 +1,4 @@
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -7,8 +8,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Import user routes
+// Rate limiter middleware
+const rateLimiter = require('./middleware/rateLimiter');
+app.use(rateLimiter);
+
+// Routes
 app.use('/api/users', require('./routes/userRoutes'));
+const bookRoutes = require('./routes/bookRoutes');
+app.use('/api/books', bookRoutes);
+const reviewRoutes = require('./routes/reviewRoutes');
+app.use('/api', reviewRoutes);
+const adminRoutes = require('./routes/adminRoutes');
+app.use('/api', adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/book_catalog';

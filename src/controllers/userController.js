@@ -10,28 +10,38 @@ exports.getProfile = async (req, res) => {
   }
 };
 
+// ...existing code...
+
 exports.updateProfile = async (req, res) => {
   try {
-    const updates = req.body;
-    // Prevent email and role changes
-    delete updates.email;
-    delete updates.role;
-    if (updates.password) {
-      updates.password = await bcrypt.hash(updates.password, 10);
+    // Prevent updating email and role
+    if ('email' in req.body || 'role' in req.body) {
+      return res.status(400).json({
+        message: "Updating 'email' and 'role' is not allowed."
+      });
     }
+
+    const updates = {};
+    if (req.body.password) {
+      const bcrypt = require('bcryptjs');
+      updates.password = await bcrypt.hash(req.body.password, 10);
+    }
+    if (req.body.age) updates.age = req.body.age;
+    if (req.body.address) updates.address = req.body.address;
+
     const user = await User.findByIdAndUpdate(
-      req.user.userId,
+      req.user.id,
       { $set: updates },
-      { new: true, runValidators: true, select: '-password' }
-    );
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+      { new: true }
+    ).select('-password');
+
     res.json(user);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Server error' });
   }
 };
+
+// ...existing code...
 
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
