@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const bookController = require('../controllers/bookController');
 const auth = require('../middleware/auth');
+const redisCache = require('../middleware/redisCache');
 
-// List/Search Books
-router.get('/', bookController.listBooks);
+// List/Search Books with Redis cache
+router.get('/', redisCache('books'), bookController.listBooks);
 
 // Add Book (Authenticated)
 router.post('/', auth, bookController.addBook);
